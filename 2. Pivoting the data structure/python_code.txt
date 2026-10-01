@@ -1,0 +1,52 @@
+## Data Structure
+
+`PCV_Stacked.parquet` contains P02, Q01, S0X and Total Antigenicity measurements for pneumococcal serotype variants packaged in Grange Castle and Puurs, respectively:
+
+| Site | Variants |
+|---|---|
+| Puurs | S01, S03, S04, S09V, S18C, S19A |
+| Grange Castle | S03, S04, S18C, S19A |
+
+Given each serotype undergoes its own chemical process and is filled at two different plants, **each serotype/site combination must be modelled independently**:
+
+```python
+import polars as pl
+
+var_mat = {
+    'Puurs': ['S01', 'S03', 'S04', 'S09V', 'S18C', 'S19A'],
+    'Grange Castle': ['S03', 'S04', 'S18C', 'S19A']
+}
+
+pcv_stacked = pl.read_parquet("PCV_Stacked.parquet")
+
+for site, variant_list in var_mat.items():
+
+    for variant in variant_list:
+
+        print(f"Processing site: {site}, variant: {variant}")
+
+        df = pcv_stacked.filter(
+            (pl.col('manufacture_site') == site) &
+            (pl.col('variant') == variant)
+        )
+
+        pivot_index = ['batch_number', 'material_number', 'product_name', 'mbc_batch_number', 'date_of_manufacture']
+
+        # very small number of duplicated rows - aggregate their value
+        df_wide = df.pivot(
+            on='parameter', 
+            values='weighted_avg_value', 
+            index=pivot_index,
+            aggregate_function='mean'
+        )
+
+        file_handle = f"{site.replace(' ', '_')}_{variant}"
+        df_wide.write_csv(f"{file_handle}.csv")
+
+```
+
+Each site/variant combination is saved to a wide table with `batch_number`, `material_number`, `product_name`, `mbc_batch_number`, `date_of_manufacture` metadata, followed by the feature variables and the outcome variable total antigenicity (e.g "S18C Total Antigenicity").
+
+Rows with values for Total Antigenicity are to be used to build, train and test the model. Once the model has been developed, use it to predict Total Antigenicity in rows for which there is no Total Antigenicity measurement. 
+
+Recall that each site/serotype is treated independently, thus the "Grange Castle S03" model should only be used to predict values for that site/serotype combination. 

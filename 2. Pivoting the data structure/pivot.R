@@ -86,4 +86,89 @@ Puurs_S01 %>%
   count(batch_number) %>%
   filter(n > 1)
 
-  
+Puurs_S03 <- read_csv("Puurs_S03.csv")
+head(Puurs_S03) #first 6 rows
+names(Puurs_S03) #column names
+dim(Puurs_S03) #get the number of rows and columns
+summary(Puurs_S03$'S03 Total Antigenicity') #summary statistics for the total antigenicity column
+sum(!is.na(Puurs_S03$'S03 Total Antigenicity')) #count of non-missing values for the total antigenicity column
+sum(is.na(Puurs_S03$'S03 Total Antigenicity')) #count of missing values for the total antigenicity column
+colSums(is.na(Puurs_S03)) #count of missing values for each column
+
+Puurs_S04 <- read_csv("Puurs_S04.csv")
+head(Puurs_S04) #first 6 rows
+names(Puurs_S04) #column names
+dim(Puurs_S04) #get the number of rows and columns
+summary(Puurs_S04$'S04 Total Antigenicity') #summary statistics for the total antigenicity column
+sum(!is.na(Puurs_S04$'S04 Total Antigenicity')) #count of non-missing values for the total antigenicity column
+sum(is.na(Puurs_S04$'S04 Total Antigenicity')) #count of missing values for the total antigenicity column
+colSums(is.na(Puurs_S04)) #count of missing values for each column
+
+Puurs_S09V <- read_csv("Puurs_S09V.csv")
+head(Puurs_S09V) #first 6 rows
+names(Puurs_S09V) #column names
+dim(Puurs_S09V) #get the number of rows and columns
+summary(Puurs_S09V$'S09V Total Antigenicity') #summary statistics for the total antigenicity column
+sum(!is.na(Puurs_S09V$'S09V Total Antigenicity')) #count of non-missing values for the total antigenicity column
+sum(is.na(Puurs_S09V$'S09V Total Antigenicity')) #count of missing values for the total antigenicity column
+colSums(is.na(Puurs_S09V)) #count of missing values for each column
+
+Puurs_S18C <- read_csv("Puurs_S18C.csv")
+head(Puurs_S18C) #first 6 rows
+names(Puurs_S18C) #column names
+dim(Puurs_S18C) #get the number of rows and columns
+summary(Puurs_S18C$'S18C Total Antigenicity') #summary statistics for the total antigenicity column
+sum(!is.na(Puurs_S18C$'S18C Total Antigenicity')) #count of non-missing values for the total antigenicity column
+sum(is.na(Puurs_S18C$'S18C Total Antigenicity')) #count of missing values for the total antigenicity column
+colSums(is.na(Puurs_S18C)) #count of missing values for each column
+
+Puurs_S19A <- read_csv("Puurs_S19A.csv")
+head(Puurs_S19A) #first 6 rows
+names(Puurs_S19A) #column names
+dim(Puurs_S19A) #get the number of rows and columns
+summary(Puurs_S19A$'S19A Total Antigenicity') #summary statistics for the total antigenicity column
+sum(!is.na(Puurs_S19A$'S19A Total Antigenicity')) #count of non-missing values for the total antigenicity column
+sum(is.na(Puurs_S19A$'S19A Total Antigenicity')) #count of missing values for the total antigenicity column
+colSums(is.na(Puurs_S19A)) #count of missing values for each column
+
+Grange_Castle_S03 <- read_csv("Grange_Castle_S03.csv")
+head(Grange_Castle_S03) #first 6 rows
+names(Grange_Castle_S03) #column names
+dim(Grange_Castle_S03) #get the number of rows and columns
+summary(Grange_Castle_S03$'S03 Total Antigenicity') #summary statistics for the total antigenicity column
+sum(!is.na(Grange_Castle_S03$'S03 Total Antigenicity')) #count of non-missing values for the total antigenicity column
+sum(is.na(Grange_Castle_S03$'S03 Total Antigenicity')) #count of missing values for the total antigenicity column
+colSums(is.na(Grange_Castle_S03)) #count of missing values for each column
+
+Grange_Castle_S04 <- read_csv("Grange_Castle_S04.csv")
+head(Grange_Castle_S04) #first 6 rows
+names(Grange_Castle_S04) #column names
+dim(Grange_Castle_S04) #get the number of rows and columns
+summary(Grange_Castle_S04$'S04 Total Antigenicity') #summary statistics for the total antigenicity column
+sum(!is.na(Grange_Castle_S04$'S04 Total Antigenicity')) #count of non-missing values for the total antigenicity column
+sum(is.na(Grange_Castle_S04$'S04 Total Antigenicity')) #count of missing values for the total antigenicity column
+colSums(is.na(Grange_Castle_S04)) #count of missing values for each column
+
+Grange_Castle_S18C <- read_csv("Grange_Castle_S18C.csv")
+head(Grange_Castle_S18C) #first 6 rows
+names(Grange_Castle_S18C) #column names
+dim(Grange_Castle_S18C) #get the number of rows and columns
+summary(Grange_Castle_S18C$'S18C Total Antigenicity') #summary statistics for the total antigenicity column
+sum(!is.na(Grange_Castle_S18C$'S18C Total Antigenicity')) #count of non-missing values for the total antigenicity column
+sum(is.na(Grange_Castle_S18C$'S18C Total Antigenicity')) #count of missing values for the total antigenicity column
+colSums(is.na(Grange_Castle_S18C)) #count of missing values for each column
+
+Grange_Castle_S19A <- read_csv("Grange_Castle_S19A.csv")
+head(Grange_Castle_S19A) #first 6 rows
+names(Grange_Castle_S19A) #column names
+dim(Grange_Castle_S19A) #get the number of rows and columns
+summary(Grange_Castle_S19A$'S19A Total Antigenicity') #summary statistics for the total antigenicity column
+sum(!is.na(Grange_Castle_S19A$'S19A Total Antigenicity')) #count of non-missing values for the total antigenicity column
+sum(is.na(Grange_Castle_S19A$'S19A Total Antigenicity')) #count of missing values for the total antigenicity column
+colSums(is.na(Grange_Castle_S19A)) #count of missing values for each column
+
+
+#for all of the Puurs serotypes, there was a higher amount of missing values for total antigenicity than non-missing values
+#for all of the Grange Castle serotypes, there was a higher amount of non-missing values for total antigenicity than missing values
+#also in the Puurs serotypes, the highest amount of missing values was in the total antigenicity column
+#in the Grange Castle serotypes, total antigenicity didn't have the highest amount of missing values 

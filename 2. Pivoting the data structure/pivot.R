@@ -140,6 +140,11 @@ sum(!is.na(Grange_Castle_S03$'S03 Total Antigenicity')) #count of non-missing va
 sum(is.na(Grange_Castle_S03$'S03 Total Antigenicity')) #count of missing values for the total antigenicity column
 colSums(is.na(Grange_Castle_S03)) #count of missing values for each column
 
+#checking for duplicates
+Grange_Castle_S03 %>%
+  count(batch_number) %>%
+  filter(n > 1)
+
 Grange_Castle_S04 <- read_csv("Grange_Castle_S04.csv")
 head(Grange_Castle_S04) #first 6 rows
 names(Grange_Castle_S04) #column names
@@ -148,6 +153,11 @@ summary(Grange_Castle_S04$'S04 Total Antigenicity') #summary statistics for the 
 sum(!is.na(Grange_Castle_S04$'S04 Total Antigenicity')) #count of non-missing values for the total antigenicity column
 sum(is.na(Grange_Castle_S04$'S04 Total Antigenicity')) #count of missing values for the total antigenicity column
 colSums(is.na(Grange_Castle_S04)) #count of missing values for each column
+
+#checking for duplicates
+Grange_Castle_S04 %>%
+  count(batch_number) %>%
+  filter(n > 1)
 
 Grange_Castle_S18C <- read_csv("Grange_Castle_S18C.csv")
 head(Grange_Castle_S18C) #first 6 rows
@@ -158,6 +168,11 @@ sum(!is.na(Grange_Castle_S18C$'S18C Total Antigenicity')) #count of non-missing 
 sum(is.na(Grange_Castle_S18C$'S18C Total Antigenicity')) #count of missing values for the total antigenicity column
 colSums(is.na(Grange_Castle_S18C)) #count of missing values for each column
 
+#checking for duplicates
+Grange_Castle_S18C %>%
+  count(batch_number) %>%
+  filter(n > 1)
+
 Grange_Castle_S19A <- read_csv("Grange_Castle_S19A.csv")
 head(Grange_Castle_S19A) #first 6 rows
 names(Grange_Castle_S19A) #column names
@@ -167,7 +182,10 @@ sum(!is.na(Grange_Castle_S19A$'S19A Total Antigenicity')) #count of non-missing 
 sum(is.na(Grange_Castle_S19A$'S19A Total Antigenicity')) #count of missing values for the total antigenicity column
 colSums(is.na(Grange_Castle_S19A)) #count of missing values for each column
 
-
+#checking for duplicates
+Grange_Castle_S19A %>%
+  count(batch_number) %>%
+  filter(n > 1) 
 #for all of the Puurs serotypes, there was a higher amount of missing values for total antigenicity than non-missing values
 #for all of the Grange Castle serotypes, there was a higher amount of non-missing values for total antigenicity than missing values
 #also in the Puurs serotypes, the highest amount of missing values was in the total antigenicity column

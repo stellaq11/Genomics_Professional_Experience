@@ -107,3 +107,88 @@ head(batch_summary_new)
 #Examining weighted average measurement
 summary(data_new$weighted_avg_value) 
 hist(data_new$weighted_avg_value) #saved in folder under "weighted_avg_value_histogram_new.pdf"
+
+
+#number of unique batch and mbc batch numbers for Puurs S01 original data
+#this is checking to see the number of rows in the original file so it can be compared to the altered file
+#want to see if the number of rows is the same in both files
+
+data_new %>%
+  filter(
+    manufacture_site == "Puurs",
+    variant == "S01"
+  ) %>%
+  distinct(batch_number, mbc_batch_number) %>%
+  nrow()
+
+data_new %>%
+  filter(
+    manufacture_site == "Puurs",
+    variant == "S03"
+  ) %>%
+  distinct(batch_number, mbc_batch_number) %>%
+  nrow()
+
+data_new %>%
+  filter(
+    manufacture_site == "Puurs",
+    variant == "S04"
+  ) %>%
+  distinct(batch_number, mbc_batch_number) %>%
+  nrow()
+
+data_new %>%
+  filter(
+    manufacture_site == "Puurs",
+    variant == "S09V"
+  ) %>%
+  distinct(batch_number, mbc_batch_number) %>%
+  nrow()
+
+data_new %>%
+  filter(
+    manufacture_site == "Puurs",
+    variant == "S18C"
+  ) %>%
+  distinct(batch_number, mbc_batch_number) %>%
+  nrow()
+
+data_new %>%
+  filter(
+    manufacture_site == "Puurs",
+    variant == "S19A"
+  ) %>%
+  distinct(batch_number, mbc_batch_number) %>%
+  nrow()
+
+data_new %>%
+  filter(
+    manufacture_site == "Grange Castle",
+    variant == "S03"
+  ) %>%
+  distinct(batch_number, mbc_batch_number) %>%
+  nrow()
+
+data_new %>%
+  filter(
+    manufacture_site == "Grange Castle",
+    variant == "S04"
+  ) %>%
+  distinct(batch_number, mbc_batch_number) %>%
+  nrow()
+
+data_new %>%
+  filter(
+    manufacture_site == "Grange Castle",
+    variant == "S18C"
+  ) %>%
+  distinct(batch_number, mbc_batch_number) %>%
+  nrow()
+
+data_new %>%
+  filter(
+    manufacture_site == "Grange Castle",
+    variant == "S19A"
+  ) %>%
+  distinct(batch_number, mbc_batch_number) %>%
+  nrow()

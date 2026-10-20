@@ -46,11 +46,12 @@ for (site in names(var_mat_new)) {
     
     # Align date and material number within each batch
     # using batch_number + mbc_batch_number as the batch key
+    # take earliest date of manufacture and first material number
     df_new <- df_new %>%
       group_by(batch_number, mbc_batch_number) %>%
       mutate(
         date_of_manufacture = if (all(is.na(date_of_manufacture))) {
-      as.Date(NA)
+      as.Date(NA) #put NA if all values are NA
     } else {
       min(date_of_manufacture, na.rm = TRUE)
     },

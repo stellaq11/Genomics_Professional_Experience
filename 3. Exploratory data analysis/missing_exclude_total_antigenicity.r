@@ -336,6 +336,176 @@ split_total_antigenicity <- function(data, outcome_variable,
 }
 
 
+#run the function across all 10 serotypes
+
+# Create training, testing and prediction datasets
+splits_all_serotypes <- lapply(
+  names(missing_above_20_removed),
+  function(dataset_name) {
+    
+    # Get the cleaned dataset
+    data <- missing_above_20_removed[[dataset_name]]
+    
+    # Extract the serotype identifier
+    serotype <- sub(
+      "^(Puurs|Grange_Castle)_",
+      "",
+      dataset_name
+    )
+    
+    # Define the Total Antigenicity outcome column
+    outcome_variable <- paste(
+      serotype,
+      "Total Antigenicity"
+    )
+    
+    # Split the dataset
+    split_total_antigenicity(
+      data = data,
+      outcome_variable = outcome_variable,
+      test_size = 0.2,
+      seed = 123
+    )
+  }
+)
+
+# Give each list element its dataset name
+names(splits_all_serotypes) <- names(missing_above_20_removed)
+
+
+#assessing the results for a particular serotype
+
+X_train_Puurs_S01 <- splits_all_serotypes$Puurs_S01$X_train
+X_train_Puurs_S01
+y_train_Puurs_S01 <- splits_all_serotypes$Puurs_S01$y_train
+
+X_test_Puurs_S01 <- splits_all_serotypes$Puurs_S01$X_test
+y_test_Puurs_S01 <- splits_all_serotypes$Puurs_S01$y_test
+
+prediction_data_Puurs_S01 <- splits_all_serotypes$Puurs_S01$prediction_data
+
+
+#check the split sizes for all serotypes
+
+split_summary <- do.call(
+  rbind,
+  lapply(names(splits_all_serotypes), function(dataset_name) {
+    
+    result <- splits_all_serotypes[[dataset_name]]
+    
+    data.frame(
+      dataset = dataset_name,
+      training_rows = nrow(result$X_train),
+      testing_rows = nrow(result$X_test),
+      prediction_rows = nrow(result$prediction_data)
+    )
+  })
+)
+
+print(split_summary)
+
+#observations from split_summary
+#The Puurs datasets have substantially more rows reserved for prediction than the Grange Castle datasets. This reflects the amount of missing Total Antigenicity in the cleaned data, rather than a problem with your splitting function.
+#Grange Castle S04 has the smallest measured dataset, with 762 observations available for training and testing combined. This is worth considering when you compare model performance across serotypes.
+
+# verify that the outcome values are never missing in the training and testing sets
+#this should be equal to 0. it is 
+
+sapply(splits_all_serotypes, function(x) {
+  c(
+    missing_y_train = sum(is.na(x$y_train)),
+    missing_y_test = sum(is.na(x$y_test))
+  )
+})
+
+#check for missing values in the predictor variables
+#counts of missing cells, not counts of affected rows
+
+sapply(splits_all_serotypes, function(x) {
+  sum(is.na(x$X_train))
+})
+
+#calculate the percentage of missing predictor values
+
+
+missing_predictor_summary <- do.call(
+  rbind,
+  lapply(names(splits_all_serotypes), function(dataset_name) {
+    
+    X_train <- splits_all_serotypes[[dataset_name]]$X_train
+    
+    data.frame(
+      dataset = dataset_name,
+      training_rows = nrow(X_train),
+      predictor_columns = ncol(X_train),
+      missing_cells = sum(is.na(X_train)),
+      total_cells = length(as.matrix(X_train)),
+      missing_percent = round(
+        100 * sum(is.na(X_train)) / length(as.matrix(X_train)),
+        2
+      )
+    )
+  })
+)
+
+print(missing_predictor_summary)
+
+
+#MICE imputation next
+
+#look at the data types in cleaned training data 
+
+# Inspect predictor data types for Puurs S01
+str(splits_all_serotypes$Puurs_S01$X_train)
+
+# Count missing values by predictor
+sort(
+  colSums(is.na(splits_all_serotypes$Puurs_S01$X_train)),
+  decreasing = TRUE
+)
+
+
+
+
+
+
+#code for MICE imputation
+
+library(mice)
+
+# Extract the three datasets
+s01 <- splits_all_serotypes$Puurs_S01
+
+X_train <- as.data.frame(s01$X_train)
+X_test <- as.data.frame(s01$X_test)
+prediction_data <- as.data.frame(s01$prediction_data)
+
+# Combine predictors in the same column structure
+all_predictors <- rbind(
+  X_train,
+  X_test,
+  prediction_data
+)
+
+# TRUE means the row is excluded when fitting
+# the imputation models, but can still be imputed
+ignore_rows <- c(
+  rep(FALSE, nrow(X_train)),
+  rep(TRUE, nrow(X_test) + nrow(prediction_data))
+)
+
+# Run MICE using predictive mean matching
+set.seed(123)
+
+mice_s01 <- mice(
+  data = all_predictors,
+  m = 5,
+  maxit = 10,
+  method = "pmm",
+  ignore = ignore_rows,
+  seed = 123,
+  printFlag = TRUE
+)
 
 
 

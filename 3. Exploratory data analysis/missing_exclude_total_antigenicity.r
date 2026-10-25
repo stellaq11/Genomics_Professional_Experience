@@ -534,3 +534,317 @@ nrow(measured_ta)
 nrow(prediction_data)
 dim(measured_ta)
 dim(prediction_data)
+
+
+
+
+
+#want to save splits_all_serotypes from vscode so i can upload it to posit cloud
+# Check that your object exists
+exists("splits_all_serotypes")
+
+# Check its structure
+str(splits_all_serotypes, max.level = 2)
+
+#saving the data in RDS format rather than CSV. RDS preserves your complete R object, including the nested list structure, data frames, column names, and data types.
+#this is due to the large file size and the difficulty running mice in vscode
+# Save the complete object
+saveRDS(
+  splits_all_serotypes,
+  file = "splits_all_serotypes.rds"
+)
+
+# Confirm the file location
+normalizePath("splits_all_serotypes.rds")
+
+#check if the file exists
+file.exists("splits_all_serotypes.rds")
+
+#check the file size before uploading
+#this gives the file size in MB
+#max upload is 500MB on posit cloud
+file.info("splits_all_serotypes.rds")$size / 1024^2
+#this returns 2.465128
+
+#uploading to positcloud
+# Install the required packages
+install.packages("mice")
+
+# Load MICE
+library(mice)
+
+# Load your saved dataset
+splits_all_serotypes <- readRDS(
+  "splits_all_serotypes.rds"
+)
+
+# Check that it loaded correctly
+str(splits_all_serotypes, max.level = 2)
+
+# List the datasets
+names(splits_all_serotypes)
+#this returns "Puurs_S01", "Puurs_S03", "Puurs_S04", "Puurs_S09V", "Puurs_S18C", "Puurs_S19A", "Grange_Castle_S03", "Grange_Castle_S04", "Grange_Castle_S18C", "Grange_Castle_S19A"
+
+#verify the training, test, and prediction splits
+# Inspect the structure of one dataset
+str(splits_all_serotypes$Puurs_S01, max.level = 1)
+
+# Check the training predictors
+dim(splits_all_serotypes$Puurs_S01$X_train)
+
+# Check the testing predictors
+dim(splits_all_serotypes$Puurs_S01$X_test)
+
+# Check the prediction predictors
+dim(splits_all_serotypes$Puurs_S01$prediction_data)
+
+packageVersion("mice") # ‘3.19.0’
+
+#check missing values before imputing
+# Missing values in the training predictors
+colSums(is.na(
+  splits_all_serotypes$Puurs_S01$X_train
+))
+
+# Missing values in the testing predictors
+colSums(is.na(
+  splits_all_serotypes$Puurs_S01$X_test
+))
+
+#check missingness across all 10 training datasets
+#see which predictor columns contain missing data in the training dataset
+
+missing_summary_before_imputation <- lapply(
+  names(splits_all_serotypes),
+  function(nm) {
+
+    x <- splits_all_serotypes[[nm]]$X_train
+
+    data.frame(
+      dataset = nm,
+      n_rows = nrow(x),
+      n_predictors = ncol(x),
+      missing_cells = sum(is.na(x)),
+      columns_with_missing = sum(colSums(is.na(x)) > 0),
+      entirely_missing_columns = sum(
+        colSums(!is.na(x)) == 0
+      )
+    )
+  }
+)
+
+missing_summary_before_imputation <- do.call(rbind, missing_summary_before_imputation)
+
+print(missing_summary_before_imputation)
+
+
+#check which method is most suitable
+# Inspect predictor types
+sapply(
+  splits_all_serotypes$Puurs_S01$X_train,
+  class
+)
+
+# Inspect missingness for each predictor
+sort(
+  colSums(is.na(
+    splits_all_serotypes$Puurs_S01$X_train
+  )),
+  decreasing = TRUE
+)
+
+
+#run a small imputation test on Puurs_S01
+
+# Select the training predictors for Puurs_S01
+X_train_S01 <- splits_all_serotypes$Puurs_S01$X_train
+
+# Confirm all predictors are numeric
+stopifnot(all(vapply(X_train_S01, is.numeric, logical(1))))
+
+# Run a small MICE test
+set.seed(123)
+
+mice_test_S01 <- mice(
+  data = as.data.frame(X_train_S01),
+  m = 2,
+  maxit = 5,
+  method = "pmm",
+  seed = 123,
+  printFlag = FALSE
+)
+
+# Inspect the result
+print(mice_test_S01)
+
+# Check the first completed training dataset
+X_train_S01_imputed <- complete(mice_test_S01, action = 1)
+
+# Confirm there are no missing predictor values
+sum(is.na(X_train_S01_imputed))
+
+#check imputation diagnostics
+# Review convergence plots
+plot(mice_test_S01)
+
+# Check for warnings or logged events
+mice_test_S01$loggedEvents
+
+
+X <- as.data.frame(
+  splits_all_serotypes$Puurs_S01$X_train
+)
+
+# 1. Identify constant or nearly constant predictors
+unique_counts <- vapply(
+  X,
+  function(x) length(unique(x[!is.na(x)])),
+  integer(1)
+)
+
+print(unique_counts[unique_counts <= 1])
+
+# 2. Calculate pairwise correlations
+cor_matrix <- cor(
+  X,
+  use = "pairwise.complete.obs"
+)
+
+# 3. List predictor pairs with absolute correlation >= 0.95
+high_cor <- which(
+  upper.tri(cor_matrix) &
+    abs(cor_matrix) >= 0.95,
+  arr.ind = TRUE
+)
+
+if (nrow(high_cor) > 0) {
+  high_cor_results <- data.frame(
+    predictor_1 = colnames(cor_matrix)[high_cor[, 1]],
+    predictor_2 = colnames(cor_matrix)[high_cor[, 2]],
+    correlation = cor_matrix[high_cor]
+  )
+  
+  print(high_cor_results)
+} else {
+  print("No predictor pairs have absolute correlation >= 0.95")
+}
+
+# 4. Check for exactly duplicated columns
+duplicated_columns <- names(X)[
+  duplicated(as.list(X))
+]
+
+print(duplicated_columns)
+
+# Make a copy with safe column names for diagnostics
+X_plot <- as.data.frame(
+  splits_all_serotypes$Puurs_S01$X_train
+)
+
+names(X_plot) <- paste0(
+  "V",
+  seq_along(X_plot)
+)
+
+set.seed(123)
+
+mice_plot_test <- mice(
+  X_plot,
+  m = 2,
+  maxit = 5,
+  method = "pmm",
+  seed = 123,
+  printFlag = FALSE
+)
+
+plot(mice_plot_test)
+
+# Inspect MICE's logged events
+mice_plot_test$loggedEvents
+
+missing_counts <- colSums(is.na(X))
+
+missing_counts[missing_counts > 0]
+
+# Variables and methods used by MICE
+data.frame(
+  variable = names(mice_plot_test$method),
+  method = mice_plot_test$method
+) |>
+  subset(method != "")
+
+#which variables are being imputed
+data.frame(
+  temporary_name = names(X_plot),
+  original_name = names(X)
+)
+
+X <- as.data.frame(
+  splits_all_serotypes$Puurs_S01$X_train
+)
+
+# Give columns safe temporary names
+names(X) <- paste0("V", seq_along(X))
+
+# Initialise MICE to obtain default settings
+ini <- mice(
+  X,
+  maxit = 0,
+  printFlag = FALSE
+)
+
+meth <- ini$method
+pred <- ini$predictorMatrix
+
+# Only impute variables that have missing values
+meth[colSums(is.na(X)) == 0] <- ""
+
+# Exclude V1 and V4 as predictors in the
+# imputation models, while retaining the columns
+pred[, c("V1", "V4")] <- 0
+
+# Do not use a variable to predict itself
+diag(pred) <- 0
+
+set.seed(123)
+
+mice_S01_revised <- mice(
+  data = X,
+  m = 5,
+  maxit = 10,
+  method = meth,
+  predictorMatrix = pred,
+  seed = 123,
+  printFlag = FALSE
+)
+
+# Inspect warnings and logged events
+mice_S01_revised$loggedEvents
+
+# Check remaining missing values in one completed dataset
+X_train_S01_imputed <- complete(
+  mice_S01_revised,
+  action = 1
+)
+
+sum(is.na(X_train_S01_imputed))
+
+# Inspect the trace plots
+plot(mice_S01_revised)
+
+# Extract the first completed dataset
+X_train_S01_imputed <- complete(
+  mice_S01_revised,
+  action = 1
+)
+
+# Restore original predictor names
+names(X_train_S01_imputed) <-
+  names(splits_all_serotypes$Puurs_S01$X_train)
+
+# Verify
+sum(is.na(X_train_S01_imputed))
+
+# Check dimensions are unchanged
+dim(X_train_S01_imputed)
+dim(splits_all_serotypes$Puurs_S01$X_train)

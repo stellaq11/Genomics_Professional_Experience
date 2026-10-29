@@ -206,10 +206,10 @@ sapply(missing_above_20_removed, ncol)
 
 #need to change the following to missing_above_20_removed
 
-feature_data$Puurs_S03
-View(feature_data$Puurs_S03)
-dim(feature_data$Puurs_S03)
-names(feature_data$Puurs_S03)
+missing_above_20_removed$Puurs_S03
+View(missing_above_20_removed$Puurs_S03)
+dim(missing_above_20_removed$Puurs_S03)
+names(missing_above_20_removed$Puurs_S03)
 
 feature_data$Puurs_S04
 View(feature_data$Puurs_S04)
@@ -383,6 +383,155 @@ X_test_Puurs_S01 <- splits_all_serotypes$Puurs_S01$X_test
 y_test_Puurs_S01 <- splits_all_serotypes$Puurs_S01$y_test
 
 prediction_data_Puurs_S01 <- splits_all_serotypes$Puurs_S01$prediction_data
+
+
+
+#want to save the files for input into python
+install.packages("jsonlite")
+library(jsonlite)
+
+write_json(
+  X_train_Puurs_S01,
+  path = "X_train_Puurs_S01.json",
+  dataframe = "rows",
+  pretty = TRUE,
+  na = "null",
+  auto_unbox = TRUE
+)
+
+y_train_Puurs_S01 <- splits_all_serotypes$Puurs_S01$y_train
+y_train_Puurs_S01
+
+write_json(
+  y_train_Puurs_S01,
+  path = "y_train_Puurs_S01.json",
+  dataframe = "rows",
+  pretty = TRUE,
+  na = "null",
+  auto_unbox = TRUE
+)
+
+#function to create json files for all 10 serotypes
+# Create a folder to store all JSON files
+output_folder <- "JSON_files"
+
+dir.create(
+  output_folder,
+  showWarnings = FALSE,
+  recursive = TRUE
+)
+
+# Loop through all 10 serotypes
+for (serotype in names(splits_all_serotypes)) {
+
+  split <- splits_all_serotypes[[serotype]]
+
+  # Save each of the five datasets
+  for (dataset_name in c(
+    "X_train",
+    "y_train",
+    "X_test",
+    "y_test",
+    "prediction_data"
+  )) {
+
+    dataset <- split[[dataset_name]]
+
+    # Create a filename
+    file_name <- paste0(
+      serotype, "_",
+      dataset_name,
+      ".json"
+    )
+
+    # Save as JSON
+    jsonlite::write_json(
+      dataset,
+      path = file.path(output_folder, file_name),
+      dataframe = "rows",
+      pretty = TRUE,
+      na = "null",
+      auto_unbox = TRUE
+    )
+  }
+}
+
+#check that 50 files were created
+json_files <- list.files(
+  "JSON_files",
+  pattern = "\\.json$",
+  full.names = TRUE
+)
+
+length(json_files)
+
+
+#check if the serotypes have the correct training and test dimensions
+lapply(splits_all_serotypes, function(split) {
+  list(
+    X_train = dim(split$X_train),
+    y_train = dim(as.data.frame(split$y_train)),
+    X_test = dim(split$X_test),
+    y_test = dim(as.data.frame(split$y_test)),
+    prediction_data = dim(split$prediction_data)
+  )
+})
+
+#save 50 files as parquet as well
+# Create a folder for the Parquet files
+output_folder <- "Parquet_files"
+
+dir.create(
+  output_folder,
+  showWarnings = FALSE,
+  recursive = TRUE
+)
+
+# Dataset names to export for every serotype
+dataset_names <- c(
+  "X_train",
+  "y_train",
+  "X_test",
+  "y_test",
+  "prediction_data"
+)
+
+# Loop through all 10 serotypes
+for (serotype in names(splits_all_serotypes)) {
+
+  split <- splits_all_serotypes[[serotype]]
+
+  for (dataset_name in dataset_names) {
+
+    dataset <- split[[dataset_name]]
+
+    # Convert the dataset to a data frame
+    dataset <- as.data.frame(dataset)
+
+    # Create the output filename
+    file_name <- paste0(
+      serotype, "_",
+      dataset_name,
+      ".parquet"
+    )
+
+    # Write the Parquet file
+    arrow::write_parquet(
+      dataset,
+      sink = file.path(output_folder, file_name)
+    )
+  }
+}
+
+#check 50 files were created
+parquet_files <- list.files(
+  "Parquet_files",
+  pattern = "\\.parquet$",
+  full.names = TRUE
+)
+
+length(parquet_files)
+
 
 
 #check the split sizes for all serotypes

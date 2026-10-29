@@ -533,6 +533,74 @@ parquet_files <- list.files(
 length(parquet_files)
 
 
+#create csv files too
+# Create a folder to store the CSV files
+output_dir <- "CSV_Files"
+
+dir.create(output_dir, showWarnings = FALSE)
+
+# Loop through all 10 serotype/site datasets
+for (serotype in names(splits_all_serotypes)) {
+
+  split <- splits_all_serotypes[[serotype]]
+
+  # Save X_train
+  write.csv(
+    split$X_train,
+    file.path(output_dir, paste0("X_train_", serotype, ".csv")),
+    row.names = FALSE
+  )
+
+  # Save y_train
+  write.csv(
+    data.frame(Total_Antigenicity = split$y_train),
+    file.path(output_dir, paste0("y_train_", serotype, ".csv")),
+    row.names = FALSE
+  )
+
+  # Save X_test
+  write.csv(
+    split$X_test,
+    file.path(output_dir, paste0("X_test_", serotype, ".csv")),
+    row.names = FALSE
+  )
+
+  # Save y_test
+  write.csv(
+    data.frame(Total_Antigenicity = split$y_test),
+    file.path(output_dir, paste0("y_test_", serotype, ".csv")),
+    row.names = FALSE
+  )
+
+  # Save prediction data
+  write.csv(
+    split$prediction_data,
+    file.path(output_dir, paste0("prediction_data_", serotype, ".csv")),
+    row.names = FALSE
+  )
+}
+
+#check for the amount of files
+# List all saved CSV files
+list.files(
+  "CSV_Files",
+  pattern = "\\.csv$",
+  full.names = TRUE
+)
+
+# Count the number of files
+length(list.files(
+  "CSV_Files",
+  pattern = "\\.csv$"
+))
+
+
+
+
+
+
+
+
 
 #check the split sizes for all serotypes
 
